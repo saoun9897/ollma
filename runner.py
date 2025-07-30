@@ -17,7 +17,7 @@ JSON_CONFIG_FILE = 'data.json'
 
 # Durations for running the process and the cooldown period, in seconds.
 RUN_DURATION_SECONDS = 600  # 10 minutes
-COOLDOWN_SECONDS = 70     # 70 seconds
+COOLDOWN_SECONDS = 70       # 70 seconds
 
 # The JSON configuration data to be written to data.json.
 # Using a Python dictionary is cleaner and less error-prone than a raw string.
@@ -36,20 +36,14 @@ JSON_DATA = {
 
 def perform_initial_setup():
     """
-    Performs the initial setup steps: changes directory, sets file permissions,
-    and creates the configuration file. This function runs only once.
+    Performs the initial setup steps: sets file permissions and creates the
+    configuration file in the current directory. This function runs only once.
     """
     print("--- Starting Initial Setup ---")
+    print(f"Working in current directory: {os.getcwd()}")
 
-    # 1. Change to the target directory
-    try:
-        print(f"Changing directory to '{TARGET_DIR}'...")
-        os.chdir(TARGET_DIR)
-        print(f"Successfully changed directory to: {os.getcwd()}")
-    except FileNotFoundError:
-        print(f"Error: The directory '{TARGET_DIR}' was not found.")
-        print("Please create the directory and place your node files inside.")
-        sys.exit(1) # Exit the script if the directory doesn't exist.
+    # The os.chdir call has been removed as the calling script (`timer.py`)
+    # already places us in the correct directory.
 
     # 2. Make the node file executable (equivalent to chmod +x)
     try:
@@ -111,4 +105,3 @@ def start_main_loop():
 if __name__ == "__main__":
     perform_initial_setup()
     start_main_loop()
-
