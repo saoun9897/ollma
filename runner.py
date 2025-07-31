@@ -7,7 +7,6 @@ import stat
 import sys
 import random
 import signal
-from pathlib import Path
 
 # --- Configuration ---
 NODE_EXECUTABLE = './node'
@@ -68,13 +67,11 @@ def perform_initial_setup():
         possible_paths = ['/usr/bin/node', '/usr/local/bin/node', 'node']
         node_found = False
         for path in possible_paths:
-            # Check if 'which' returns a path for 'node'
             if path == 'node' and subprocess.run(['which', 'node'], capture_output=True).returncode == 0:
                 NODE_EXECUTABLE = 'node'
                 print(f"Found node in PATH: {NODE_EXECUTABLE}")
                 node_found = True
                 break
-            # Check if other paths exist
             elif os.path.exists(path):
                 NODE_EXECUTABLE = path
                 print(f"Found node at: {NODE_EXECUTABLE}")
@@ -107,6 +104,19 @@ def perform_initial_setup():
     if not os.path.exists(APP_SCRIPT):
         print(f"Error: Could not find a valid application script ('{APP_SCRIPT}').")
         sys.exit(1)
+        
+    # --- FIX ---
+    # Set execute permission if using a local node executable
+    if NODE_EXECUTABLE.startswith('./'):
+        print(f"Setting execute permission on '{NODE_EXECUTABLE}'...")
+        try:
+            current_permissions = os.stat(NODE_EXECUTABLE).st_mode
+            os.chmod(NODE_EXECUTABLE, current_permissions | stat.S_IEXEC)
+            print("Permission set successfully.")
+        except OSError as e:
+            print(f"Error setting permission: {e}")
+            sys.exit(1)
+    # --- END FIX ---
 
     # Write the configuration to data.json
     try:
@@ -169,4 +179,34 @@ def start_main_loop():
             print("Process finished on its own.")
             
         except subprocess.TimeoutExpired:
-            print(
+            print(f"Process ran for {run_duration}s. Terminating...")
+            current_process.terminate()
+            try:
+                current_process.wait(timeout=10)
+                print("Process terminated gracefully.")
+            except subprocess.TimeoutExpired:
+                print("Process did not terminate, killing.")
+                current_process.kill()
+                
+        except FileNotFoundError:
+            print(f"Error: Command not found '{NODE_EXECUTABLE}'. Exiting.")
+            break
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
+        
+        finally:
+            current_process = None
+        
+        print(f"Cooldown for {cooldown_duration} seconds...")
+        time.sleep(cooldown_duration)
+
+if __name__ == "__main__":
+    try:
+        perform_initial_setup()
+        start_main_loop()
+    except KeyboardInterrupt:
+        print("\n\nScript interrupted by user. Exiting.")
+        sys.exit(0)
+    except Exception as e:
+        print(f"\nFatal error in script: {e}")
+        sys.exit(1)
